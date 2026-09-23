@@ -19,7 +19,7 @@ dictionary = enchant.Dict("ru_RU")
 # Function to ask AI
 gigachat = GigaChat(credentials=gigachat_api_key, verify_ssl_certs=False)
 
-def ask_ai(user_prompt):
+def ask_ai(user_prompt: str) -> str:
     answer = gigachat.chat(open("preambula.txt", mode="r", encoding="utf-8").read() + user_prompt).choices[0].message.content.replace("GigaChat", "Кибер Витя").replace("**", "").replace("Сбер", "***")
     print(f">> {dt.datetime.now()} -- Asking Gigachat...\n\nQ:\n\n{user_prompt}\n\nA:\n\n{answer}\n\n\n")
     return answer 
@@ -132,15 +132,18 @@ def connect_proxy(bot):
         try:
             apihelper.proxy = {'https':f'socks5h://{proxy}'}
             bot.get_me()
-            print(f"Proxy connected '{proxy}'")
+            print(f"Proxy connected [{proxy}]")
             break
         except:
-            print(f"Unable to connect to the proxy '{proxy}'")
+            print(f"Failed to connect to [{proxy}]")
     else:
-        print("\nNo proxy connected!")
+        connect_proxy(bot)
 
 # Bot /start message
-start_mesage = ('Здравствуйте! Вас приветствует КиберВитя, созданный для узнавания домашнего задания. Вот, что я могу:\n'
-         '1) /dz - узнать домашнее задание\n'
-         '2) /fuldz - полный список известного дз\n'
-         '3) /autofive - информация о калькуляторе оценки')
+start_mesage = (
+    "Здравствуйте! Вас приветствует телеграмм бот по имени КиберВитя, созданный для ознакомления с домашним заданием.\nВот, что я могу:\n"
+    "1) /dz - узнать домашнее задание\n"
+    "2) /fuldz - полный список известного дз\n"
+    "3) /consultation, /consultations - список консультаций на сегодня / неделю\n"
+    "4) /check &ltслово&gt - проверка слова по словарю"
+)
