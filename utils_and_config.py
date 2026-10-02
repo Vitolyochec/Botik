@@ -3,6 +3,7 @@ from word_bank import word_bank
 import datetime as dt
 from gigachat import GigaChat
 from telebot import apihelper
+from random import shuffle
 
 
 config = open("config.txt", "r", encoding="utf-8").read().split("\n") # loading config file and splitting info
@@ -77,7 +78,6 @@ def get_fulldz() -> str:
             for segment in read_file("homework/" + days[x]).split("\n\n"):
                 if isHomework(segment):    
                     fulldz += segment + "\n\n"
-
     return fulldz
 
 # Function to get dz for tomorrow
@@ -128,7 +128,9 @@ def text_type(text: str) -> str:
 # Function to connect to one of the proxies in proxy.txt
 def connect_proxy(bot):
     print("\nContecting proxy...\n")
-    for proxy in open("proxy.txt").read().split():
+    proxy_list = open("proxy.txt").read().split()
+    shuffle(proxy_list)
+    for proxy in proxy_list:
         try:
             apihelper.proxy = {'https':f'socks5h://{proxy}'}
             bot.get_me()

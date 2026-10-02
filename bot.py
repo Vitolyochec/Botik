@@ -12,7 +12,7 @@ connect_proxy(bot)
 print(f'\n>> {dt.datetime.now()} -- BOT STARTED')
 
 # Log function
-def log(message):
+def log(message: types.Message) -> None:
     if message.chat.id != owner_id:
         # print(message)
         # Getting the name of the message sender
@@ -28,7 +28,7 @@ def log(message):
 
 # /start handler
 @bot.message_handler(commands=['start', 'help'])
-def handle_start(message):
+def handle_start(message: types.Message):
     bot.send_message(message.chat.id, start_mesage) # Sending starting message to the user
     log(message) # Logging the message to the owner
 
@@ -37,8 +37,8 @@ def get_buttons_markup(full_dz=False):
     buttons = types.InlineKeyboardMarkup(row_width=6)
 
     if full_dz:
-        rel = types.InlineKeyboardButton("🔄 Обновить", callback_data="reload_full")
-        remove = types.InlineKeyboardButton(text="❌ Убрать нафиг", callback_data="remove")
+        rel = types.InlineKeyboardButton("🔄", callback_data="reload_full")
+        remove = types.InlineKeyboardButton(text="❌", callback_data="remove")
         buttons.add(rel, remove)
     else:
         rel = types.InlineKeyboardButton("🔄", callback_data="reload")
@@ -54,58 +54,55 @@ def get_buttons_markup(full_dz=False):
    
     return buttons
 
-#! /dz handler
 
-def send_dz(message, send_mode: str):
+
+def send_dz(message: types.Message, chat_id: int, full_dz: bool):
     
     _, tomorrow = today_and_tomorrow() # orientating in time
 
-    # Sending the message
-    bot.send_message(
-        chat_id=main_group_id if send_mode == "main_group" else message.chat.id,
-        text=dz(tomorrow),
-        reply_markup=get_buttons_markup() # Getting the buttons for the message
-    )
+    if not full_dz:
+        bot.send_message(
+            chat_id=chat_id,
+            text=dz(tomorrow),
+            reply_markup=get_buttons_markup()
+        )
+    else:
+        bot.send_message(
+            chat_id=chat_id,
+            text=get_fulldz(), 
+            reply_markup=get_buttons_markup(full_dz=True)
+        )
 
     log(message) # Logging the message to the owner
 
+#! /dz handler
 @bot.message_handler(commands=["дз", "dz"])
-def sendDZ(message): 
-    send_dz(message, message.chat.type)
-    
-@bot.message_handler(commands=["group", "группа"])
-def handle_start(message): 
-    send_dz(message, "main_group")
+def sendDZ(message: types.Message): 
+    send_dz(message=message, chat_id=message.chat.id, full_dz=False)
 
 #! /fuldz handler
-
-last_full_dz_message = [0, 0] # Last full dz message variable
-
 @bot.message_handler(commands=["фулдз", "fuldz"])
-def handle_start(message):
+def handle_start(message: types.Message):
+    send_dz(message=message, chat_id=message.chat.id, full_dz=True)
 
-    # Deleting the previous message to keep the chat cleaner and to avoid most of spamming
-    if message.chat.type == "group" and last_full_dz_message[0] != 0 and last_full_dz_message[1] != 0:
-        bot.delete_message(last_full_dz_message[0], last_full_dz_message[1])
+#! Admin homework sending commands
+@bot.message_handler(commands=["group", "группа"])
+def handle_start(message: types.Message): 
+    send_dz(message=message, chat_id=main_group_id, full_dz=False)
 
-    # Sending the full dz message
-    sent_message = bot.reply_to(
-        message, 
-        text=get_fulldz(), 
-        reply_markup=get_buttons_markup(full_dz=True)
-    )
-    last_full_dz_message[0], last_full_dz_message[1] = sent_message.chat.id, sent_message.id # Saving the data of the last sent full dz message
-    log(message) # Logging the message to the owner
+@bot.message_handler(commands=["group_full", "группа_фулл"])
+def handle_start(message: types.Message): 
+    send_dz(message=message, chat_id=main_group_id, full_dz=True)
 
 # /fooldz handler
 @bot.message_handler(commands=["fool", "fooldz"])
-def handle_start(message):
+def handle_start(message: types.Message):
     bot.reply_to(message, "Fool - с английского дурак, а я не такой. Не обзывайте меня, позязя 😥") # Replying to the message
     log(message) # Logging the message to the owner
 
 #! /check handler
 @bot.message_handler(commands=["check", "проверь", "проверить"])
-def handle_start(message):
+def handle_start(message: types.Message):
     if len(message.text.split()) < 2:
         bot.reply_to(message, "Нечего чекать, дурында -_-"); return 0
     
@@ -119,7 +116,7 @@ def handle_start(message):
 #! /consultations handler
 
 @bot.message_handler(commands=["consultations", "консультации"])
-def hande_start(message):
+def hande_start(message: types.Message):
     bot.send_message(message.chat.id, "<b>КОНСУЛЬТАЦИИ</b>" + open("consultations.txt", encoding="utf-8", mode="r").read().replace("\n\n\n", "\n\n")) # sending the list of all consultations
     log(message)
 
@@ -133,7 +130,7 @@ def consultaion_markup(today):
 
 #! /consultation handler
 @bot.message_handler(commands=["consultation", "консультация"])
-def handle_start(message):
+def handle_start(message: types.Message):
     today, _ = today_and_tomorrow()
     bot.send_message(
         message.chat.id, open("consultations.txt", encoding="utf-8", mode="r").read().split("\n\n\n")[today if today < 5 else 0], 
@@ -142,7 +139,7 @@ def handle_start(message):
 
 #! Callback handler
 @bot.callback_query_handler(func=lambda c: True)
-def callback(c: telebot.types.CallbackQuery):
+def callback(c: types.CallbackQuery):
     _, tomorrow = today_and_tomorrow() # Orientating in time
 
     # Changing consultation list
@@ -175,20 +172,19 @@ def callback(c: telebot.types.CallbackQuery):
             reply_markup=get_buttons_markup()
         )
     # Removing bot's message (owner only)
-    elif c.data == 'remove':
+    elif c.data == 'remove' and c.json["from"]["id"] == owner_id:
         bot.delete_message(c.message.chat.id, c.message.id) # Deleting the message
     else:
-        sent_message = bot.send_message(
+        bot.send_message(
             text=get_fulldz() if c.data == "full" else dz(int(c.data)),
             chat_id=c.message.chat.id,
             receiver_user_id=c.from_user.id,
             callback_query_id=c.id,
         )
-        log(sent_message) # Logging the message for the owner
 
 #! Any message handler
 @bot.message_handler(func=lambda m: True)
-def simple_answer(message):
+def simple_answer(message: types.Message):
 
     # Admin message sending logic
     chat_id, *other_text = message.text.split("\n")
