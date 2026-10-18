@@ -129,7 +129,7 @@ def text_type(text: str) -> str:
 def connect_proxy(bot):
     print("\nContecting proxy...\n")
     proxy_list = open("proxy.txt").read().split()
-    shuffle(proxy_list)
+    # shuffle(proxy_list)
     for proxy in proxy_list:
         try:
             apihelper.proxy = {'https':f'socks5h://{proxy}'}

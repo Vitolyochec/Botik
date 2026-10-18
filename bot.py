@@ -172,8 +172,9 @@ def callback(c: types.CallbackQuery):
             reply_markup=get_buttons_markup()
         )
     # Removing bot's message (owner only)
-    elif c.data == 'remove' and c.json["from"]["id"] == owner_id:
-        bot.delete_message(c.message.chat.id, c.message.id) # Deleting the message
+    elif c.data == 'remove':
+        if c.json["from"]["id"] == owner_id:
+            bot.delete_message(c.message.chat.id, c.message.id) # Deleting the message
     else:
         bot.send_message(
             text=get_fulldz() if c.data == "full" else dz(int(c.data)),
@@ -188,7 +189,7 @@ def simple_answer(message: types.Message):
 
     # Admin message sending logic
     chat_id, *other_text = message.text.split("\n")
-    if message.chat.id == owner_id and str(abs(int(chat_id))).isdigit():
+    if message.chat.id == owner_id and chat_id[1:].isdigit():
         bot.send_message(chat_id, "\n".join(other_text))
 
     # Answer to a swearing
@@ -248,4 +249,4 @@ def handle_start(message):
     print(f'--[Sticker ID: {message.id}]--')
 
 # Bot polling
-bot.infinity_polling(none_stop=True, timeout=120)
+bot.infinity_polling(none_stop=True, timeout=200)
