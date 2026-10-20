@@ -1,5 +1,4 @@
 from enchant import Dict
-from data.word_bank import word_bank
 import datetime as dt
 from gigachat import GigaChat
 from telebot import apihelper
@@ -7,7 +6,9 @@ from random import shuffle
 from tomllib import load
 
 
-config = load(open("config.cfg", "rb"))
+# Config
+try:    config = load(open(".config.cfg", "rb")) # loading my config
+except: config = load(open("config.cfg", "rb"))  # loading config as downloaded project
 
 bot_key = config["telegram_api_key"] # Telegram API key for bot
 owner_id = config["owner_id"] # Telegram id of the bot's owner
@@ -19,6 +20,7 @@ gigachat_api_key = config["gigachat_api_key"] # Gigachat API key
 preambula_path = "data/preambula.txt"
 birthdays_path = "data/birthdays.txt"
 events_path = "data/events.txt"
+word_bank_path = "data/word_bank.toml"
 
 # Dictionary
 dictionary = Dict("ru_RU")
@@ -31,11 +33,14 @@ def ask_ai(user_prompt: str) -> str:
     print(f">> {dt.datetime.now()} -- Asking Gigachat...\n\nQ:\n\n{user_prompt}\n\nA:\n\n{answer}\n\n\n")
     return answer 
 
+# Word bank
+word_bank = load(open(word_bank_path, "rb"))
+
 # Birthdays dictionary
-birthdays = dict(map(lambda x: (x.split("--")), open(birthdays_path, "r", encoding="utf-8").read().split("\n"))) # loading birthdays
+birthdays = load(open(birthdays_path, "rb"))
 
 # Event dictionary
-events = dict(map(lambda x: (x.split("--")), open(events_path, "r", encoding="utf-8").read().split("\\\\\n"))) # loading events
+events = load(open(events_path, "rb"))
 
 # List of homework files names
 days = list(map(lambda x: x + ".txt", ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']))
