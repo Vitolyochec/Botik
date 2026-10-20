@@ -1,6 +1,6 @@
 import math, random, telebot, time
 from telebot import types
-from utils_and_config import *
+from utils import *
 
 # Connecting to bot with API key
 bot = telebot.TeleBot(bot_key, parse_mode='html')
@@ -208,7 +208,7 @@ def simple_answer(message: types.Message):
             case 7: reply_text += ', не при детях же!'
             case 8: reply_text += ', я не хочу разогревать свою аннигиляторную пушку.'
             case 9: reply_text = 'Про мать было лишнее...'
-            case 10: image = open(swearing_pics[random.randint(0, len(swearing_pics)-1)], 'rb') # Choosing random swearing picture
+            case 10: image = open(swearing_pics_paths[random.randint(0, len(swearing_pics_paths)-1)], 'rb') # Choosing random swearing picture
         if image == '':
             bot.reply_to(message, reply_text) # Replying with text
         else: # Relpying with an image

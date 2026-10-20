@@ -1,35 +1,41 @@
-import enchant
-from word_bank import word_bank
+from enchant import Dict
+from data.word_bank import word_bank
 import datetime as dt
 from gigachat import GigaChat
 from telebot import apihelper
 from random import shuffle
+from tomllib import load
 
 
-config = open("config.txt", "r", encoding="utf-8").read().split("\n") # loading config file and splitting info
+config = load(open("config.cfg", "rb"))
 
-bot_key = config[0] # Telegram API key for bot
-owner_id = int(config[1]) # Telegram id of the bot's owner
-owner_name = config[2] # Owner's account name
-main_group_id = int(config[3]) # Class's group id
-gigachat_api_key = config[4] # Gigachat API key
+bot_key = config["telegram_api_key"] # Telegram API key for bot
+owner_id = config["owner_id"] # Telegram id of the bot's owner
+owner_name = config["owner_name"] # Owner's account name
+main_group_id = config["main_group_id"] # Class's group id
+gigachat_api_key = config["gigachat_api_key"] # Gigachat API key
+
+# Paths
+preambula_path = "data/preambula.txt"
+birthdays_path = "data/birthdays.txt"
+events_path = "data/events.txt"
 
 # Dictionary
-dictionary = enchant.Dict("ru_RU")
+dictionary = Dict("ru_RU")
 
 # Function to ask AI
 gigachat = GigaChat(credentials=gigachat_api_key, verify_ssl_certs=False)
 
 def ask_ai(user_prompt: str) -> str:
-    answer = gigachat.chat(open("preambula.txt", mode="r", encoding="utf-8").read() + user_prompt).choices[0].message.content.replace("GigaChat", "Кибер Витя").replace("**", "").replace("Сбер", "***")
+    answer = gigachat.chat(open(preambula_path, mode="r", encoding="utf-8").read() + user_prompt).choices[0].message.content.replace("GigaChat", "Кибер Витя").replace("**", "").replace("Сбер", "***")
     print(f">> {dt.datetime.now()} -- Asking Gigachat...\n\nQ:\n\n{user_prompt}\n\nA:\n\n{answer}\n\n\n")
     return answer 
 
 # Birthdays dictionary
-birthdays = dict(map(lambda x: (x.split("--")), open("birthdays.txt", "r", encoding="utf-8").read().split("\n"))) # loading birthdays
+birthdays = dict(map(lambda x: (x.split("--")), open(birthdays_path, "r", encoding="utf-8").read().split("\n"))) # loading birthdays
 
 # Event dictionary
-events = dict(map(lambda x: (x.split("--")), open("events.txt", "r", encoding="utf-8").read().split("\\\\\n"))) # loading events
+events = dict(map(lambda x: (x.split("--")), open(events_path, "r", encoding="utf-8").read().split("\\\\\n"))) # loading events
 
 # List of homework files names
 days = list(map(lambda x: x + ".txt", ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']))
@@ -38,7 +44,7 @@ days = list(map(lambda x: x + ".txt", ['monday', 'tuesday', 'wednesday', 'thursd
 signs = '!,?.@№#"`()+-_=^:;~[]{}<>/|' + "'"
 
 # List of swering pictures filepaths
-swearing_pics = ['pictures/1.jpg', 'pictures/2.jpg']
+swearing_pics_paths = ['pictures/1.jpg', 'pictures/2.jpg']
 
 # File reading function
 def read_file(filename: str) -> str:
