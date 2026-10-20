@@ -6,7 +6,8 @@ from utils import *
 bot = telebot.TeleBot(bot_key, parse_mode='html')
 
 # Connecting to proxy
-connect_proxy(bot)
+if connect_to_proxy:
+    connect_proxy(bot)
 
 # Starting message
 print(f'\n>> {dt.datetime.now()} -- BOT STARTED')

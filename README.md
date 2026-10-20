@@ -89,18 +89,19 @@ Botik/
 
 ```
 
-### `config.cfg`
+### `config.toml`
 
 Содержит переменные для базовой конфигурации бота.
 
 **Структура:**
 
-```conf
+```toml
 telegram_api_key = "<ключ бота в Телеграмме>"
 owner_id = <ID владельца>
 owner_name = "<содержимое поля Имя' аккаунта владельца>"
 main_group_id = <ID группы>
 gigachat_api_key = "<ключ от API Gigachat>"
+connect_to_proxy = <true / false, по умолчанию - false>
 ```
 
 ### `events.toml`

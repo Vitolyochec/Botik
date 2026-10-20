@@ -1,5 +1,6 @@
 telegram_api_key = "Ключ бота в Телеграмм"
-owner_id = 0000000000
+owner_id = 1000000000
 owner_name = "Имя владельца"
 main_group_id = -1234567890123
 gigachat_api_key = "Ключ API GigaChat"
+connect_to_proxy = false

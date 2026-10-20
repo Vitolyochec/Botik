@@ -7,19 +7,20 @@ from tomllib import load
 
 
 # Config
-try:    config = load(open(".config.cfg", "rb")) # loading my config
-except: config = load(open("config.cfg", "rb"))  # loading config as downloaded project
+try:    config = load(open(".config.toml", "rb")) # loading my config
+except: config = load(open("config.toml", "rb"))  # loading config as downloaded project
 
 bot_key = config["telegram_api_key"] # Telegram API key for bot
 owner_id = config["owner_id"] # Telegram id of the bot's owner
 owner_name = config["owner_name"] # Owner's account name
 main_group_id = config["main_group_id"] # Class's group id
 gigachat_api_key = config["gigachat_api_key"] # Gigachat API key
+connect_to_proxy = config["proxy_connection"] # Whether to connect to proxies on start
 
 # Paths
 preambula_path = "data/preambula.txt"
-birthdays_path = "data/birthdays.txt"
-events_path = "data/events.txt"
+birthdays_path = "data/birthdays.toml"
+events_path = "data/events.toml"
 word_bank_path = "data/word_bank.toml"
 
 # Dictionary
