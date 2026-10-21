@@ -15,13 +15,14 @@ owner_id = config["owner_id"] # Telegram id of the bot's owner
 owner_name = config["owner_name"] # Owner's account name
 main_group_id = config["main_group_id"] # Class's group id
 gigachat_api_key = config["gigachat_api_key"] # Gigachat API key
-connect_to_proxy = config["proxy_connection"] # Whether to connect to proxies on start
+connect_to_proxy = config["connect_to_proxy"] # Whether to connect to proxies on start
 
 # Paths
 preambula_path = "data/preambula.txt"
 birthdays_path = "data/birthdays.toml"
 events_path = "data/events.toml"
 word_bank_path = "data/word_bank.toml"
+proxy_path = "data/proxy.txt"
 
 # Dictionary
 dictionary = Dict("ru_RU")
@@ -140,13 +141,15 @@ def text_type(text: str) -> str:
 # Function to connect to one of the proxies in proxy.txt
 def connect_proxy(bot):
     print("\nContecting proxy...\n")
-    proxy_list = open("proxy.txt").read().split()
-    # shuffle(proxy_list)
+    proxy_list = open(proxy_path).read().split()
+    proxy_list = proxy_list[:3] + shuffle(proxy_list[3:])
     for proxy in proxy_list:
         try:
             apihelper.proxy = {'https':f'socks5h://{proxy}'}
             bot.get_me()
             print(f"Proxy connected [{proxy}]")
+            with open(proxy_path, "w") as proxy_file:
+                proxy_file.write("\n".join([proxy] + proxy_list[:proxy_list.index(proxy)] + proxy_list[proxy_list.index(proxy)+1:]))
             break
         except:
             print(f"Failed to connect to [{proxy}]")
