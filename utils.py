@@ -138,11 +138,17 @@ def text_type(text: str) -> str:
             if word.lower() in word_list:
                 return group_name
 
+# Shuffles the given list and returns its shuffled variant
+def shuffled(l: list) -> list:
+    shuffle(l)
+    return l
+
 # Function to connect to one of the proxies in proxy.txt
+best_proxies_num = 5
 def connect_proxy(bot):
     print("\nContecting proxy...\n")
     proxy_list = open(proxy_path).read().split()
-    proxy_list = proxy_list[:3] + shuffle(proxy_list[3:])
+    proxy_list = proxy_list[:best_proxies_num] + shuffled(proxy_list[best_proxies_num:])
     for proxy in proxy_list:
         try:
             apihelper.proxy = {'https':f'socks5h://{proxy}'}

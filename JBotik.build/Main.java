@@ -1,5 +1,6 @@
 import javax.swing.*;
 import javax.swing.border.*;
+import javax.swing.plaf.basic.BasicScrollBarUI;
 import javax.imageio.ImageIO;
 
 import java.awt.event.*;
@@ -9,11 +10,23 @@ import java.awt.*;
 
 public class Main extends JFrame {
 
-	public static int WIDTH = 910, HEIGHT = 800;
+	public static int WIDTH = 1100, HEIGHT = 850;
 	
 	public static myPanel panel;
 	public static String currentFilepath; // current filepath of the working file
-	
+
+	// Color pallete
+	public static Color windowBackgroundColor = new Color(0x191b20);
+	public static Color textViewBackgroundColor = new Color(0x16171d);
+	public static Color textViewForegroundColor = new Color(0xf9f9e4);
+	public static Color buttonBackgroundColor = new Color(0x21252b);
+	public static Color buttonForegroundColor = new Color(0x888a8d);
+	public static Color buttonActiveBackgroundColor = new Color(0x16171d);
+	public static Color ScrollBarThumbColor = new Color(0x31353b);
+	public static Color caretColor = new Color(0xf9f9e4);
+
+	public static String defaultFontName = "Monocraft";
+
 	public enum day {
 		MONDAY   ("Пн", "homework/monday.txt"), 
 		TUESDAY  ("Вт", "homework/tuesday.txt"), 
@@ -51,13 +64,24 @@ public class Main extends JFrame {
 			System.out.println("Something went wrong while writing to the file on the path: \"" + filepath + "\"\n" + e);
 		}
 	}
-	
+
+	public static void registerFonts() {
+		try {
+			Font font = Font.createFont(Font.TRUETYPE_FONT, new File(Main.class.getResource("/fonts/Monocraft.otf").getPath())).deriveFont(12f);
+			GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(font);
+		} catch (Exception e) {
+			System.out.println("Something went wrong while adding fonts!\n" + e);
+		}
+
+	}
+
 	public Main() {
 		super("JBotik");
 		setSize(WIDTH, HEIGHT);
 		setResizable(false);
 		setLocationRelativeTo(null);
 		
+	
 		// Setting icons
 		String[] iconsPaths = {"/icons/icon16.png", "/icons/icon32.png", "/icons/icon48.png", "/icons/icon64.png"};
 		ArrayList<Image> icons = new ArrayList<>();
@@ -98,6 +122,7 @@ class myPanel extends JPanel {
 		super();
 		setFocusable(true);
 		setLayout(null);
+		setBackground(Main.windowBackgroundColor);
 		
 		// Buttons to view the homework for specific days
 		for (int i = 0; i < 6; i++) 
@@ -112,7 +137,7 @@ class myPanel extends JPanel {
 
 class DayButton extends JButton implements ActionListener, MouseListener {
 	
-	public Font font = new Font("Consolas", Font.PLAIN, 18);
+	public Font font = new Font(Main.defaultFontName, Font.PLAIN, 18);
 	public String filepath;
 	public int dayIndex = 0;
 	
@@ -126,7 +151,8 @@ class DayButton extends JButton implements ActionListener, MouseListener {
 		
 		// Bounds and styling
 		setBounds(x, y, Main.WIDTH/6, Main.HEIGHT/20);
-		setBackground(Color.LIGHT_GRAY);
+		setBackground(Main.buttonBackgroundColor);
+		setForeground(Main.buttonForegroundColor);
 		setFocusPainted(false);
 		setContentAreaFilled(false);
 		setOpaque(true);
@@ -145,7 +171,7 @@ class DayButton extends JButton implements ActionListener, MouseListener {
 
 	@Override
 	public void mousePressed(MouseEvent e) {
-		setBackground(Color.GRAY);
+		setBackground(Main.buttonActiveBackgroundColor);
 	}
 
 	@Override
@@ -153,7 +179,7 @@ class DayButton extends JButton implements ActionListener, MouseListener {
 
 	@Override
 	public void mouseReleased(MouseEvent e) {
-		setBackground(Color.LIGHT_GRAY);
+		setBackground(Main.buttonBackgroundColor);
 	}
 
 	@Override
@@ -166,7 +192,7 @@ class DayButton extends JButton implements ActionListener, MouseListener {
 
 class FullButton extends JButton implements ActionListener, MouseListener {
 
-	public Font font = new Font("Consolas", Font.PLAIN, 18);
+	public Font font = new Font(Main.defaultFontName, Font.PLAIN, 18);
 	
 	public FullButton() {
 		super();
@@ -176,7 +202,8 @@ class FullButton extends JButton implements ActionListener, MouseListener {
 
 		// Bounds and styling
 		setBounds(0, Main.HEIGHT/20, Main.WIDTH, Main.HEIGHT/20);
-		setBackground(Color.LIGHT_GRAY);
+		setBackground(Main.buttonBackgroundColor);
+		setForeground(Main.buttonForegroundColor);
 		setBorder(new CompoundBorder(new LineBorder(Color.BLACK), new EmptyBorder(0, 0, 0, 0)));
 		setFocusPainted(false);
 		setContentAreaFilled(false);
@@ -199,7 +226,7 @@ class FullButton extends JButton implements ActionListener, MouseListener {
 
 	@Override
 	public void mousePressed(MouseEvent e) {
-		setBackground(Color.GRAY);
+		setBackground(Main.buttonActiveBackgroundColor);
 	}
 
 	@Override
@@ -207,7 +234,7 @@ class FullButton extends JButton implements ActionListener, MouseListener {
 
 	@Override
 	public void mouseReleased(MouseEvent e) {
-		setBackground(Color.LIGHT_GRAY);
+		setBackground(Main.buttonBackgroundColor);
 	}
 
 	@Override
@@ -219,19 +246,35 @@ class FullButton extends JButton implements ActionListener, MouseListener {
 }
 
 class TextArea extends JScrollPane {
-
-	public Font font = new Font("Consolas", Font.PLAIN, 18);
+	
+	public Font font = new Font(Main.defaultFontName, Font.PLAIN, 18);
 	public static JTextPane textView = new JTextPane();
 	
 	public TextArea() {
 		
 		super(textView);
-	
+		setBorder(null);
+		verticalScrollBar.setBackground(Main.textViewBackgroundColor);
+		verticalScrollBar.setBorder(null);
+		
+		verticalScrollBar.setUI(new BasicScrollBarUI() {
+			@Override
+			protected void configureScrollBarColors() {
+				this.thumbColor = Main.ScrollBarThumbColor;
+				this.trackColor = Main.textViewBackgroundColor;
+			}
+		});
+
 		int gap = 10;
 		setBounds(gap, Main.HEIGHT/20*2 + gap, Main.WIDTH - 2 * gap, Main.HEIGHT/20*18 - 2 * gap);
 		
+		textView.setCaretColor(Main.caretColor);
 		textView.setFont(font);
+		textView.setBackground(Main.textViewBackgroundColor);
+		textView.setForeground(Main.textViewForegroundColor);
 		
+
+
 		textView.addKeyListener(new KeyListener() {
 			@Override
 			public void keyPressed(KeyEvent e) { }
