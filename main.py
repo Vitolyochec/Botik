@@ -10,12 +10,11 @@ if connect_to_proxy:
     connect_proxy(bot)
 
 # Starting message
-print(f'\n>> {dt.datetime.now()} -- BOT STARTED')
+print(f'\n>> {dt.datetime.now()} -- BOTIK ACTIVATED')
 
 # Log function
 def log(message: types.Message) -> None:
     if message.chat.id != owner_id:
-        # print(message)
         # Getting the name of the message sender
         name = message.from_user.first_name
         if message.from_user.last_name is not None:
@@ -123,10 +122,10 @@ def hande_start(message: types.Message):
 
 # /consultation button layout
 def consultaion_markup(today):
-    next = types.InlineKeyboardButton(text="▶", callback_data=f"next{today}")
-    prev = types.InlineKeyboardButton(text="◀", callback_data=f"prev{today}")
+    next_btn = types.InlineKeyboardButton(text="▶", callback_data=f"next{today}")
+    prev_btn = types.InlineKeyboardButton(text="◀", callback_data=f"prev{today}")
     markup = types.InlineKeyboardMarkup()
-    markup.add(prev, next)
+    markup.add(prev_btn, next_btn)
     return markup
 
 #! /consultation handler
@@ -247,7 +246,7 @@ def simple_answer(message: types.Message):
 # Sticker handler
 @bot.message_handler(content_types=["sticker"])
 def handle_start(message):
-    print(f'--[Sticker ID: {message.id}]--')
+    print(f'>> {dt.datetime.now()} -- [Sticker ID: {message.id}]')
 
 # Bot polling
 bot.infinity_polling(none_stop=True, timeout=200)

@@ -25,7 +25,7 @@ public class Main extends JFrame {
 	public static Color ScrollBarThumbColor = new Color(0x31353b);
 	public static Color caretColor = new Color(0xf9f9e4);
 
-	public static String defaultFontName = "Monocraft";
+	public static String defaultFontName = "Consolas";
 
 	public enum day {
 		MONDAY   ("Пн", "homework/monday.txt"), 
@@ -52,7 +52,7 @@ public class Main extends JFrame {
 				text += scanner.nextLine() + "\n";
 			return text.trim();
 		} catch (Exception e) {
-			System.out.println("Something went wrong while reading the file on the path: \"" + filepath + "\"\n" + e);
+			System.out.println("Unable to read the file: \"" + filepath + "\"\n" + e);
 			return null;
 		}
 	}
@@ -61,7 +61,7 @@ public class Main extends JFrame {
 		try (FileWriter fileWriter = new FileWriter(filepath)) {
 			fileWriter.write(Main.panel.textArea.getText());
 		} catch (Exception e) {
-			System.out.println("Something went wrong while writing to the file on the path: \"" + filepath + "\"\n" + e);
+			System.out.println("Unable to write to the file: \"" + filepath + "\"\n" + e);
 		}
 	}
 
@@ -81,7 +81,6 @@ public class Main extends JFrame {
 		setResizable(false);
 		setLocationRelativeTo(null);
 		
-	
 		// Setting icons
 		String[] iconsPaths = {"/icons/icon16.png", "/icons/icon32.png", "/icons/icon48.png", "/icons/icon64.png"};
 		ArrayList<Image> icons = new ArrayList<>();
@@ -89,7 +88,7 @@ public class Main extends JFrame {
 			try {
 				icons.add(ImageIO.read(Main.class.getResource(iconPath)));
 			} catch (Exception e) {
-				System.out.println("Something went wrong while reading the icon on the path: \"" + iconPath + "\"\n" + e.getMessage());
+				System.out.println("Unable to load the icon: \"" + iconPath + "\"\n" + e.getMessage());
 			}
 		}
 		setIconImages(icons);

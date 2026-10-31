@@ -4,6 +4,7 @@ from gigachat import GigaChat
 from telebot import apihelper
 from random import shuffle
 from tomllib import load
+from os import listdir
 
 
 # Config
@@ -31,7 +32,7 @@ dictionary = Dict("ru_RU")
 gigachat = GigaChat(credentials=gigachat_api_key, verify_ssl_certs=False)
 
 def ask_ai(user_prompt: str) -> str:
-    answer = gigachat.chat(open(preambula_path, mode="r", encoding="utf-8").read() + user_prompt).choices[0].message.content.replace("GigaChat", "Кибер Витя").replace("**", "").replace("Сбер", "***")
+    answer = gigachat.chat(read_file(preambula_path) + user_prompt).choices[0].message.content.replace("GigaChat", "Кибер Витя").replace("**", "").replace("Сбер", "***")
     print(f">> {dt.datetime.now()} -- Asking Gigachat...\n\nQ:\n\n{user_prompt}\n\nA:\n\n{answer}\n\n\n")
     return answer 
 
@@ -45,13 +46,13 @@ birthdays = load(open(birthdays_path, "rb"))
 events = load(open(events_path, "rb"))
 
 # List of homework files names
-days = list(map(lambda x: x + ".txt", ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']))
+days = [x + ".txt" for x in ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"]]
 
 # List of signs
 signs = '!,?.@№#"`()+-_=^:;~[]{}<>/|' + "'"
 
 # List of swering pictures filepaths
-swearing_pics_paths = ['pictures/1.jpg', 'pictures/2.jpg']
+swearing_pics_paths = ["pictures" + x for x in listdir("pictures")]
 
 # File reading function
 def read_file(filename: str) -> str:
@@ -145,7 +146,7 @@ def shuffled(l: list) -> list:
 
 # Function to connect to one of the proxies in proxy.txt
 best_proxies_num = 5
-def connect_proxy(bot):
+def connect_proxy(bot) -> None:
     print("\nContecting proxy...\n")
     proxy_list = open(proxy_path).read().split()
     proxy_list = proxy_list[:best_proxies_num] + shuffled(proxy_list[best_proxies_num:])
@@ -153,12 +154,12 @@ def connect_proxy(bot):
         try:
             apihelper.proxy = {'https':f'socks5h://{proxy}'}
             bot.get_me()
-            print(f"Proxy connected [{proxy}]")
+            print(f"[{proxy}] - Connected")
             with open(proxy_path, "w") as proxy_file:
                 proxy_file.write("\n".join([proxy] + proxy_list[:proxy_list.index(proxy)] + proxy_list[proxy_list.index(proxy)+1:]))
             break
         except:
-            print(f"Failed to connect to [{proxy}]")
+            print(f"[{proxy}] - Failed to connect")
     else:
         connect_proxy(bot)
 
