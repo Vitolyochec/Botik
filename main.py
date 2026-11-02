@@ -55,7 +55,6 @@ def get_buttons_markup(full_dz=False):
     return buttons
 
 
-
 def send_dz(message: types.Message, chat_id: int, full_dz: bool):
     
     _, tomorrow = today_and_tomorrow() # orientating in time

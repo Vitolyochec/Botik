@@ -78,7 +78,7 @@ def isHomework(segment: str) -> bool:
     if len(segment) == 0: # checking for an empty string
         return False
     if segment.rstrip()[-1] == "-": # checking for a "-" situation in the end
-            return False
+        return False
     return True
 
 # Function to get full dz text

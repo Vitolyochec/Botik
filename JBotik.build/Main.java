@@ -10,7 +10,7 @@ import java.awt.*;
 
 public class Main extends JFrame {
 
-	public static int WIDTH = 1100, HEIGHT = 850;
+	public static int WIDTH = 1050, HEIGHT = 800;
 	
 	public static myPanel panel;
 	public static String currentFilepath; // current filepath of the working file
@@ -72,7 +72,6 @@ public class Main extends JFrame {
 		} catch (Exception e) {
 			System.out.println("Something went wrong while adding fonts!\n" + e);
 		}
-
 	}
 
 	public Main() {
@@ -271,8 +270,6 @@ class TextArea extends JScrollPane {
 		textView.setFont(font);
 		textView.setBackground(Main.textViewBackgroundColor);
 		textView.setForeground(Main.textViewForegroundColor);
-		
-
 
 		textView.addKeyListener(new KeyListener() {
 			@Override
