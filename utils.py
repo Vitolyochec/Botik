@@ -25,9 +25,6 @@ events_path = "data/events.toml"
 word_bank_path = "data/word_bank.toml"
 proxy_path = "data/proxy.txt"
 
-# Dictionary
-dictionary = Dict("ru_RU")
-
 # Function to ask AI
 gigachat = GigaChat(credentials=gigachat_api_key, verify_ssl_certs=False)
 
@@ -46,7 +43,7 @@ birthdays = load(open(birthdays_path, "rb"))
 events = load(open(events_path, "rb"))
 
 # List of homework files names
-days = [x + ".txt" for x in ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"]]
+homework_files = ["monday.txt", "tuesday.txt", "wednesday.txt", "thursday.txt", "friday.txt", "saturday.txt"]
 
 # List of signs
 signs = '!,?.@№#"`()+-_=^:;~[]{}<>/|' + "'"
@@ -88,8 +85,8 @@ def get_fulldz() -> str:
     # Iterating over all dz files and adding dz to the fulldz variable
     for i in range(6):
         x = tomorrow + i - 6 if tomorrow + i > 5 else tomorrow + i
-        if read_file("homework/" + days[x]) != '':
-            for segment in read_file("homework/" + days[x]).split("\n\n"):
+        if read_file("homework/" + homework_files[x]) != '':
+            for segment in read_file("homework/" + homework_files[x]).split("\n\n"):
                 if isHomework(segment):    
                     fulldz += segment + "\n\n"
     return fulldz
@@ -99,7 +96,7 @@ def dz(day_num: int) -> str:
     today, _ = today_and_tomorrow()
     delta_day = 7 - (today - day_num) if today > day_num else day_num - today
     dz_text = formatted_date(delta_day)
-    for segment in read_file("homework/" + days[day_num]).split("\n\n"):
+    for segment in read_file("homework/" + homework_files[day_num]).split("\n\n"):
         if isHomework(segment):
             dz_text += segment + "\n\n"
     

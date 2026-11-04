@@ -9,6 +9,9 @@ bot = telebot.TeleBot(bot_key, parse_mode='html')
 if connect_to_proxy:
     connect_proxy(bot)
 
+# apihelper.proxy = {'http':f'socks5h://5.75.133.113:10808'}
+# print(bot.get_me())
+
 # Starting message
 print(f'\n>> {dt.datetime.now()} -- BOTIK ACTIVATED')
 
@@ -98,19 +101,6 @@ def handle_start(message: types.Message):
 def handle_start(message: types.Message):
     bot.reply_to(message, "Fool - с английского дурак, а я не такой. Не обзывайте меня, позязя 😥") # Replying to the message
     log(message) # Logging the message to the owner
-
-#! /check handler
-@bot.message_handler(commands=["check", "проверь", "проверить"])
-def handle_start(message: types.Message):
-    if len(message.text.split()) < 2:
-        bot.reply_to(message, "Нечего чекать, дурында -_-"); return 0
-    
-    word = message.text.split()[1]
-
-    if dictionary.check(word):
-        bot.reply_to(message, f'Да, есть такое слово <i><b>"{word}".</b></i>')
-    else:
-        bot.reply_to(message, f'Извините, но, возможно, вы имели в виду что-то из этого:\n' + "<i><b>" + ', '.join(dictionary.suggest(word)) + "</b></i>")
 
 #! /consultations handler
 
