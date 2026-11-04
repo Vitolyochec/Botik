@@ -22,9 +22,9 @@ def cmd_full_dz():
 
 clear()
 while True:
-    clear()
     print("\n\n[ dz | full_dz | exit ]")
     cmd = input("\n>> ")
+    clear()
     match cmd:
         case "dz":
             cmd_dz()
