@@ -6,17 +6,26 @@ import re
 def clear():
     print("\n"*50)
 
-def remove_html_formatting(s: str) -> str:
-    return "".join(re.split(r"</*.>", s))
+html_to_telegramm_dict = {
+    "<b>": "**", "</b>": "**",
+    "<i>": "__", "</i>": "__",
+    "<u>": "__", "</u>": "__",
+}
+
+def html_to_relegramm_formatting(s: str) -> str:
+    for i, v in html_to_telegramm_dict.items():
+        s = s.replace(i, v)
+    return s
+    # return "".join(re.split(r"</*.>", s))
 
 def cmd_dz():
     _, tomorrow = today_and_tomorrow() # orientating in time
-    homework = remove_html_formatting(dz(tomorrow).rstrip())
+    homework = html_to_relegramm_formatting(dz(tomorrow).rstrip())
     print(homework)
     copy(homework)
 
 def cmd_full_dz():
-    homework = remove_html_formatting(get_fulldz())
+    homework = html_to_relegramm_formatting(get_fulldz())
     print(homework)
     copy(homework)
 

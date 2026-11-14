@@ -2,6 +2,7 @@ import math, random, telebot, time
 from telebot import types
 from utils import *
 
+
 # Connecting to bot with API key
 bot = telebot.TeleBot(bot_key, parse_mode='html')
 
@@ -171,6 +172,24 @@ def callback(c: types.CallbackQuery):
             receiver_user_id=c.from_user.id,
             callback_query_id=c.id,
         )
+
+#! Meme handler
+@bot.message_handler(commands=["meme", "мем"])
+def message_handler(message: types.Message):
+    bot.send_photo(
+        message.chat.id,
+        photo=open("memes/" + random.choice(listdir("memes")), "rb"),
+        reply_to_message_id=message.id
+    )
+
+@bot.message_handler(commands=["group_meme", "группа_мем"])
+def message_handler(message: types.Message):
+    if message.from_user.id == owner_id:
+        bot.send_photo(
+            main_group_id,
+            photo=open("memes/" + random.choice(listdir("memes")), "rb"),
+        )
+
 
 #! Any message handler
 @bot.message_handler(func=lambda m: True)

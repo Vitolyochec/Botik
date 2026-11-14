@@ -1,11 +1,10 @@
-from enchant import Dict
 import datetime as dt
 from gigachat import GigaChat
 from telebot import apihelper
 from random import shuffle
 from tomllib import load
 from os import listdir
-
+from winsound import Beep
 
 # Config
 try:    config = load(open(".config.toml", "rb")) # loading my config
@@ -50,7 +49,6 @@ signs = '!,?.@№#"`()+-_=^:;~[]{}<>/|' + "'"
 
 # List of swering pictures filepaths
 swearing_pics_paths = ["pictures" + x for x in listdir("pictures")]
-
 # File reading function
 def read_file(filename: str) -> str:
     return open(filename, encoding='utf-8', mode='r').read()
@@ -152,6 +150,7 @@ def connect_proxy(bot) -> None:
             apihelper.proxy = {'https':f'socks5h://{proxy}'}
             bot.get_me()
             print(f"[{proxy}] - Connected")
+            Beep(800, 500) # successfull beep
             with open(proxy_path, "w") as proxy_file:
                 proxy_file.write("\n".join([proxy] + proxy_list[:proxy_list.index(proxy)] + proxy_list[proxy_list.index(proxy)+1:]))
             break
