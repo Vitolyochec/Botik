@@ -1,16 +1,21 @@
-import math, random, telebot, time
+import math, random, telebot, time, requests
 from telebot import types
 from utils import *
+import json
+import asyncio
 
 
 # Connecting to bot with API key
-bot = telebot.TeleBot(bot_key, parse_mode='html')
+bot = telebot.TeleBot(bot_key, parse_mode='html', colorful_logs=True)
 
 # Connecting to proxy
-if connect_to_proxy:
-    connect_proxy(bot)
+# if connect_to_proxy:
+#     connect_proxy(bot)
 
-# apihelper.proxy = {'http':f'socks5h://5.75.133.113:10808'}
+
+apihelper.API_URL = r"https://long-pond-b143.irennasss3984.workers.dev/bot{0}/{1}"
+
+# apihelper.proxy = {'https':"https://long-pond-b143.irennasss3984.workers.dev/"}
 # print(bot.get_me())
 
 # Starting message
@@ -55,7 +60,7 @@ def get_buttons_markup(full_dz=False):
         sat = types.InlineKeyboardButton("Сб", callback_data="5")
         full = types.InlineKeyboardButton("📚", callback_data="full")
         buttons.add(mon, tue, wed, thu, fri, sat, full, rel, remove)
-   
+
     return buttons
 
 
@@ -174,20 +179,77 @@ def callback(c: types.CallbackQuery):
         )
 
 #! Meme handler
+apihelper.READ_TIMEOUT = 200
 @bot.message_handler(commands=["meme", "мем"])
 def message_handler(message: types.Message):
-    bot.send_photo(
-        message.chat.id,
-        photo=open("memes/" + random.choice(listdir("memes")), "rb"),
-        reply_to_message_id=message.id
+
+    meme = get_random_meme()
+    meme_points = meme.level.generate_points()
+    
+    requests.post(
+        apihelper.API_URL.format(bot_key, "sendPhoto"),
+        data={
+            "chat_id": message.chat.id,
+            "has_spoiler": True,
+            "reply_to_message_id": message.id,
+            "caption": f"<b>@{message.from_user.username}</b> выбил мем редкости <span class=\"tg-spoiler\"><b>{meme.level_name}</b> {meme.level.emoji} (+{meme_points})</span> ",
+            "parse_mode": "html"
+        },
+        files = {"photo":meme.get_image()}
     )
+    
+    # bot.send_photo(
+    #     message.chat.id,
+    #     photo=meme.get_image(),
+    #     has_spoiler=True,
+    #     reply_to_message_id=message.id,
+    #     caption=caption
+    # )
+
+    username = message.from_user.username
+    user_data_path = f"users/{username}.json"
+    try:
+        user_data = json.load(open(user_data_path, "rb"))
+    except:
+        open(user_data_path, "w").write("{" + f'\"username": "{username}", "meme_points": 0' + "}")
+    
+    user_data = json.load(open(user_data_path, "rb"))
+    user_data["meme_points"] += meme_points
+    json.dump(user_data, open(user_data_path, "r+"), indent=4)
+
+    log(message)
+
+@bot.message_handler(commands=["meme_top", "мем_топ"])
+def message_handler(message: types.Message):
+    users = [json.load(open("users/" + username, "rb")) for username in listdir("users")]
+
+    def comparator(user):
+        return user["meme_points"]
+
+
+    users = sorted(users, key=comparator, reverse=True)
+    medals = "🥇🥈🥉"
+    text = "<b>=====[МЕМ ТОП]=====</b>\n\n"
+
+    for place in range(3):
+        if place > len(users) - 1: break
+        text += medals[place] + f"@{users[place]["username"]} - {users[place]["meme_points"]}\n"
+
+    bot.send_message(
+        chat_id=message.chat.id,
+        text=text
+    )
+
+    log(message)
+
 
 @bot.message_handler(commands=["group_meme", "группа_мем"])
 def message_handler(message: types.Message):
     if message.from_user.id == owner_id:
+        meme = get_random_meme()
         bot.send_photo(
             main_group_id,
-            photo=open("memes/" + random.choice(listdir("memes")), "rb"),
+            photo=meme.get_image(),
         )
 
 
@@ -216,7 +278,7 @@ def simple_answer(message: types.Message):
             case 7: reply_text += ', не при детях же!'
             case 8: reply_text += ', я не хочу разогревать свою аннигиляторную пушку.'
             case 9: reply_text = 'Про мать было лишнее...'
-            case 10: image = open(swearing_pics_paths[random.randint(0, len(swearing_pics_paths)-1)], 'rb') # Choosing random swearing picture
+            case 10: image = open(choice(swearing_pics_paths), 'rb') # Choosing random swearing picture
         if image == '':
             bot.reply_to(message, reply_text) # Replying with text
         else: # Relpying with an image

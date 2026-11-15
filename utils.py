@@ -1,14 +1,15 @@
 import datetime as dt
 from gigachat import GigaChat
 from telebot import apihelper
-from random import shuffle
-from tomllib import load
+from random import shuffle, choice
+from tomllib import load as loadtoml
 from os import listdir
 from winsound import Beep
+from re import match
 
 # Config
-try:    config = load(open(".config.toml", "rb")) # loading my config
-except: config = load(open("config.toml", "rb"))  # loading config as downloaded project
+try:    config = loadtoml(open(".config.toml", "rb")) # loading my config
+except: config = loadtoml(open("config.toml", "rb"))  # loading config as downloaded project
 
 bot_key = config["telegram_api_key"] # Telegram API key for bot
 owner_id = config["owner_id"] # Telegram id of the bot's owner
@@ -33,13 +34,13 @@ def ask_ai(user_prompt: str) -> str:
     return answer 
 
 # Word bank
-word_bank = load(open(word_bank_path, "rb"))
+word_bank = loadtoml(open(word_bank_path, "rb"))
 
 # Birthdays dictionary
-birthdays = load(open(birthdays_path, "rb"))
+birthdays = loadtoml(open(birthdays_path, "rb"))
 
 # Event dictionary
-events = load(open(events_path, "rb"))
+events = loadtoml(open(events_path, "rb"))
 
 # List of homework files names
 homework_files = ["monday.txt", "tuesday.txt", "wednesday.txt", "thursday.txt", "friday.txt", "saturday.txt"]
@@ -48,7 +49,7 @@ homework_files = ["monday.txt", "tuesday.txt", "wednesday.txt", "thursday.txt", 
 signs = '!,?.@№#"`()+-_=^:;~[]{}<>/|' + "'"
 
 # List of swering pictures filepaths
-swearing_pics_paths = ["pictures" + x for x in listdir("pictures")]
+swearing_pics_paths = ["pictures/" + x for x in listdir("pictures")]
 # File reading function
 def read_file(filename: str) -> str:
     return open(filename, encoding='utf-8', mode='r').read()
@@ -139,25 +140,68 @@ def shuffled(l: list) -> list:
     shuffle(l)
     return l
 
+
+
 # Function to connect to one of the proxies in proxy.txt
 best_proxies_num = 5
 def connect_proxy(bot) -> None:
+    apihelper.CONNECT_TIMEOUT = 100
     print("\nContecting proxy...\n")
     proxy_list = open(proxy_path).read().split()
     proxy_list = proxy_list[:best_proxies_num] + shuffled(proxy_list[best_proxies_num:])
     for proxy in proxy_list:
+        print(f"[{proxy}]", end=" ")
         try:
             apihelper.proxy = {'https':f'socks5h://{proxy}'}
+            # apihelper.proxy = {'https':f'https://long-pond-b143.irennasss3984.workers.dev/bot'}
+            # print(apihelper.proxy)
+            
             bot.get_me()
-            print(f"[{proxy}] - Connected")
+            print(f"- Connected")
             Beep(800, 500) # successfull beep
             with open(proxy_path, "w") as proxy_file:
                 proxy_file.write("\n".join([proxy] + proxy_list[:proxy_list.index(proxy)] + proxy_list[proxy_list.index(proxy)+1:]))
             break
-        except:
-            print(f"[{proxy}] - Failed to connect")
+        except Exception as e:
+            print(f"- Failed to connect - {e}")
     else:
         connect_proxy(bot)
+
+
+class Level:
+    def __init__(self, emoji: str, points: list[int]):
+        self.emoji = emoji
+        self.points = points
+
+    def generate_points(self) -> int:
+        return choice(self.points)
+
+meme_levels = {
+    "COMMON": Level("🗿", [0, 1]), 
+    "RARE" : Level("💎", [3, 4, 5]), 
+    "LEGENDARY" : Level("✨", [8, 9, 10]), 
+    "FMS": Level("📐", [11, 12])
+}
+
+class Meme:
+    def __init__(self, path: str):
+        self.path = path
+        self.level_name = path.split("/")[1].upper()
+        self.level = meme_levels[self.level_name]
+
+    def get_image(self):        
+        return open(self.path, "rb")
+
+def get_random_meme() -> Meme:
+    
+    memes = []
+    for level in listdir("memes"):
+        for meme_name in listdir(f"memes/{level}"):
+            memes.append(f"memes/{level}/{meme_name}")
+
+    meme_path = choice(memes)
+
+    return Meme(meme_path)
 
 # Bot /start message
 start_mesage = (
