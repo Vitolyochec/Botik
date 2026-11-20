@@ -1,4 +1,4 @@
-# Установка и подготовка к эксплуатации
+# 📦 Установка и подготовка к эксплуатации
 
 **Системные требования:**
 - Установленный Python версии 3.12+
@@ -17,7 +17,7 @@
 6. Активировать бота, запустив файл `START_BOT.bat`
 <br> (дождаться подключения к прокси в случае использования таковых)
 
-# Дополнительная настройка
+# ⚙️ Дополнительная настройка
 
 - Дополнительно можно настроить список команд бота у @BotFather:
 ```text
@@ -35,7 +35,7 @@ meme_top - ТОП по мемам
   3. Распределить мемы по категориям в папке `memes`
 
 
-# Telegram
+# 📬 Telegram
 
 ## Команды бота:
 
@@ -79,7 +79,7 @@ meme_top - ТОП по мемам
 
 ![Логи владельцу](README.images/admin_logs.png)
 
-# Код
+# ⌨️ Код
 
 ## Зависимости
 
@@ -87,11 +87,11 @@ meme_top - ТОП по мемам
 
 ```bash
 pip install pyTelegramBotAPI
-pip install pyenchant
 pip install gigachat
 pip install requests[socks]
 pip install PySocks
 pip install pyperclip
+pip install coloredlogs
 ```
 
 ## Структура проекта
@@ -127,7 +127,6 @@ Botik/
    |- preambula.txt
    |- proxy.txt
    '- word_bank.toml
-
 ```
 
 ### `config.toml`
@@ -145,6 +144,8 @@ gigachat_api_key = "<ключ от API Gigachat>"
 connect_to_proxy = <true / false, по умолчанию - false>
 API_URL = "<ссылка на API через CloudFlare>"
 ```
+
+Инструкция по подключению к API Телеграмма через ClodFlare: https://github.com/winchanii/TgWsApiProxy
 
 ### `events.toml`
 

@@ -1,8 +1,9 @@
-import random, telebot, time, requests
+import telebot, time, requests
 from telebot import types
-from utils import *
 from pprint import pformat
 
+try: from utils import *
+except Exception as e: input(e)
 
 # Connecting to bot with API key
 bot = telebot.TeleBot(bot_key, parse_mode='html', colorful_logs=True)
@@ -16,7 +17,7 @@ log("BOTIK ACTIVATED")
 
 # Log function
 def logTG(message: types.Message, data: dict={}) -> None:
-    if 1 or message.chat.id != owner_id:
+    if message.chat.id != owner_id:
         data["message text"] = message.text
 
         # Getting the name of the message sender
@@ -25,7 +26,7 @@ def logTG(message: types.Message, data: dict={}) -> None:
         ctime = dt.datetime.now()
         chat_type = message.chat.type
         chat_id = message.chat.id
-        str_data = pformat(data, expand=True, sort_dicts=True)
+        str_data = pformat(data, expand=True, sort_dicts=True) if len(data) else ""
         
         # Log message text
         bot.send_message(

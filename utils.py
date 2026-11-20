@@ -276,7 +276,7 @@ for folder in must_directories: # Creating main folders
         mkdir(folder)
 
 for level in meme_levels.keys(): # Creating meme category folders
-    if level not in listdir("memes"):
+    if level not in listdir("memes/"):
         mkdir("memes/" + level)
 
 # Bot /start message
