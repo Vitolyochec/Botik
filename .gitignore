@@ -3,6 +3,4 @@
 data/__pycache__
 .config.toml
 memes/*
-!memes
 users/*
-!users

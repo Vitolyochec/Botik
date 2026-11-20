@@ -1,45 +1,45 @@
-import math, random, telebot, time, requests
+import random, telebot, time, requests
 from telebot import types
 from utils import *
-import json
-import asyncio
+from pprint import pformat
 
 
 # Connecting to bot with API key
 bot = telebot.TeleBot(bot_key, parse_mode='html', colorful_logs=True)
 
 # Connecting to proxy
-# if connect_to_proxy:
-#     connect_proxy(bot)
-
-
-apihelper.API_URL = r"https://long-pond-b143.irennasss3984.workers.dev/bot{0}/{1}"
-
-# apihelper.proxy = {'https':"https://long-pond-b143.irennasss3984.workers.dev/"}
-# print(bot.get_me())
+if connect_to_proxy:
+    connect_proxy(bot)
 
 # Starting message
-print(f'\n>> {dt.datetime.now()} -- BOTIK ACTIVATED')
+log("BOTIK ACTIVATED")
 
 # Log function
-def log(message: types.Message) -> None:
-    if message.chat.id != owner_id:
+def logTG(message: types.Message, data: dict={}) -> None:
+    if 1 or message.chat.id != owner_id:
+        data["message text"] = message.text
+
         # Getting the name of the message sender
-        name = message.from_user.first_name
-        if message.from_user.last_name is not None:
-            name += f' {message.from_user.last_name}' # Getting sender's name if exists
+        name = message.from_user.first_name + (f' {message.from_user.last_name}' if message.from_user.last_name is not None else "")
+        username = message.from_user.username
+        ctime = dt.datetime.now()
+        chat_type = message.chat.type
+        chat_id = message.chat.id
+        str_data = pformat(data, expand=True, sort_dicts=True)
         
         # Log message text
-        text = f'>> {dt.datetime.now()}\n     [{message.chat.type} - {message.chat.id}]\n     {name}:\n<b>{message.text}</b>' 
-        bot.send_message(owner_id, text=text) # Sending log message to the bot's owner
+        bot.send_message(
+            chat_id=owner_id,
+            text=f'<pre>>> {ctime}\n   ({chat_type} - {chat_id})\n   [ {name} | @{username}]\n\n{str_data}</pre>'
+        ) # Sending log message to the bot's owner
 
-        time.sleep(2) # Sleeping for 2 seconds for some reason
+        time.sleep(1) # Sleeping for 1 second for some reason
 
 # /start handler
-@bot.message_handler(commands=['start', 'help'])
+@bot.message_handler(commands=["start", "help"])
 def handle_start(message: types.Message):
     bot.send_message(message.chat.id, start_mesage) # Sending starting message to the user
-    log(message) # Logging the message to the owner
+    logTG(message) # Logging the message to the owner
 
 # Buttons' markup
 def get_buttons_markup(full_dz=False):
@@ -64,7 +64,7 @@ def get_buttons_markup(full_dz=False):
     return buttons
 
 
-def send_dz(message: types.Message, chat_id: int, full_dz: bool):
+def send_dz(message: types.Message, chat_id: int | str, full_dz: bool):
     
     _, tomorrow = today_and_tomorrow() # orientating in time
 
@@ -81,77 +81,40 @@ def send_dz(message: types.Message, chat_id: int, full_dz: bool):
             reply_markup=get_buttons_markup(full_dz=True)
         )
 
-    log(message) # Logging the message to the owner
+    logTG(message) # Logging the message to the owner
 
 #! /dz handler
-@bot.message_handler(commands=["дз", "dz"])
+@bot.message_handler(commands=["dz"])
 def sendDZ(message: types.Message): 
     send_dz(message=message, chat_id=message.chat.id, full_dz=False)
 
 #! /fuldz handler
-@bot.message_handler(commands=["фулдз", "fuldz"])
+@bot.message_handler(commands=["fulldz"])
 def handle_start(message: types.Message):
     send_dz(message=message, chat_id=message.chat.id, full_dz=True)
 
 #! Admin homework sending commands
-@bot.message_handler(commands=["group", "группа"])
+@bot.message_handler(commands=["group_dz"])
 def handle_start(message: types.Message): 
     send_dz(message=message, chat_id=main_group_id, full_dz=False)
 
-@bot.message_handler(commands=["group_full", "группа_фулл"])
+@bot.message_handler(commands=["group_full"])
 def handle_start(message: types.Message): 
     send_dz(message=message, chat_id=main_group_id, full_dz=True)
 
-# /fooldz handler
-@bot.message_handler(commands=["fool", "fooldz"])
-def handle_start(message: types.Message):
-    bot.reply_to(message, "Fool - с английского дурак, а я не такой. Не обзывайте меня, позязя 😥") # Replying to the message
-    log(message) # Logging the message to the owner
-
 #! /consultations handler
-
-@bot.message_handler(commands=["consultations", "консультации"])
+@bot.message_handler(commands=["consultations"])
 def hande_start(message: types.Message):
-    bot.send_message(message.chat.id, "<b>КОНСУЛЬТАЦИИ</b>" + open("consultations.txt", encoding="utf-8", mode="r").read().replace("\n\n\n", "\n\n")) # sending the list of all consultations
-    log(message)
-
-# /consultation button layout
-def consultaion_markup(today):
-    next_btn = types.InlineKeyboardButton(text="▶", callback_data=f"next{today}")
-    prev_btn = types.InlineKeyboardButton(text="◀", callback_data=f"prev{today}")
-    markup = types.InlineKeyboardMarkup()
-    markup.add(prev_btn, next_btn)
-    return markup
-
-#! /consultation handler
-@bot.message_handler(commands=["consultation", "консультация"])
-def handle_start(message: types.Message):
-    today, _ = today_and_tomorrow()
-    bot.send_message(
-        message.chat.id, open("consultations.txt", encoding="utf-8", mode="r").read().split("\n\n\n")[today if today < 5 else 0], 
-        reply_markup=consultaion_markup(today if today < 5 else 0),
-        )
+    bot.send_message(message.chat.id, "<b>КОНСУЛЬТАЦИИ</b>\n\n" + open(consultations_path, encoding="utf-8", mode="r").read().replace("\n\n\n", "\n\n")) # sending the list of all consultations
+    logTG(message)
 
 #! Callback handler
 @bot.callback_query_handler(func=lambda c: True)
 def callback(c: types.CallbackQuery):
     _, tomorrow = today_and_tomorrow() # Orientating in time
-
-    # Changing consultation list
-    if c.data[:-1] in ["next", "prev"]:
-        day = int(c.data[-1])
-        next_day = day-1 if c.data[:-1] == "prev" else day+1
-        if next_day < 0: next_day = 4
-        if next_day > 4: next_day = 0
-
-        bot.edit_message_text(
-            chat_id=c.message.chat.id, 
-            message_id=c.message.id,
-            text=open("consultations.txt", encoding="utf-8", mode="r").read().split("\n\n\n")[next_day],
-            reply_markup=consultaion_markup(next_day)
-        )
+    
     # Reloading full dz message
-    elif c.data == "reload_full":
+    if c.data == "reload_full":
         bot.edit_message_text(
             chat_id=c.message.chat.id, 
             message_id=c.message.id, 
@@ -179,78 +142,65 @@ def callback(c: types.CallbackQuery):
         )
 
 #! Meme handler
-apihelper.READ_TIMEOUT = 200
-@bot.message_handler(commands=["meme", "мем"])
+@bot.message_handler(commands=["meme"])
 def message_handler(message: types.Message):
 
+    # Setting up the main variables
     meme = get_random_meme()
-    meme_points = meme.level.generate_points()
-    
-    requests.post(
-        apihelper.API_URL.format(bot_key, "sendPhoto"),
-        data={
-            "chat_id": message.chat.id,
-            "has_spoiler": True,
-            "reply_to_message_id": message.id,
-            "caption": f"<b>@{message.from_user.username}</b> выбил мем редкости <span class=\"tg-spoiler\"><b>{meme.level_name}</b> {meme.level.emoji} (+{meme_points})</span> ",
-            "parse_mode": "html"
-        },
-        files = {"photo":meme.get_image()}
-    )
-    
-    # bot.send_photo(
-    #     message.chat.id,
-    #     photo=meme.get_image(),
-    #     has_spoiler=True,
-    #     reply_to_message_id=message.id,
-    #     caption=caption
-    # )
-
     username = message.from_user.username
+    user_data = get_user_data(username)
     user_data_path = f"users/{username}.json"
-    try:
-        user_data = json.load(open(user_data_path, "rb"))
-    except:
-        open(user_data_path, "w").write("{" + f'\"username": "{username}", "meme_points": 0' + "}")
-    
-    user_data = json.load(open(user_data_path, "rb"))
-    user_data["meme_points"] += meme_points
+    meme_points = meme.level.generate_points()
+    user_is_just_banned = False
+    user_is_banned = time.time() < user_data["meme_ban_time"]
+
+    # Meme logic
+    if not user_is_banned:
+        user_data["meme_points"] += meme_points
+        user_data["last_meme_point"] = meme_points
+        user_data["meme_ban_counter"] = user_data["meme_ban_counter"] + 1 if meme_points == 0 and meme_points == user_data["last_meme_point"] else 0
+        user_data["meme_ban_time"] = 0
+
+    if user_data["meme_ban_counter"] == meme_ban_limit:
+        user_data["meme_ban_counter"] = 0
+        user_data["meme_ban_time"] = time.time() + meme_ban_period
+        user_is_just_banned = True
+
+    # Saving user data
     json.dump(user_data, open(user_data_path, "r+"), indent=4)
 
-    log(message)
+    # Sending the message
+    if user_is_just_banned or not user_is_banned:
+        requests.post(
+            apihelper.API_URL.format(bot_key, "sendPhoto"),
+            data={
+                "chat_id": message.chat.id,
+                "has_spoiler": True,
+                "reply_to_message_id": message.id,
+                "caption": f"<b>@{message.from_user.username}</b> выбил мем редкости <span class=\"tg-spoiler\"><b>{meme.level_name}</b> {meme.level.emoji} (+{meme_points})</span>" \
+                        + (f"<span class=\"tg-spoiler\">, а также <b>бан</b> на {meme_ban_period} секунд за получение нуля очков {meme_ban_limit} раз подряд! 🥳</span>" if user_is_just_banned else ""),
+                "parse_mode": "html"
+            },
+            files = {"photo": meme.get_image()}
+        )
+    else:
+        bot.send_message(
+            chat_id=message.chat.id,
+            reply_to_message_id=message.id,
+            text=f"@{username} будет находиться в мемном бане ещё {round(user_data["meme_ban_time"]-time.time())} секунд"
+        )
 
-@bot.message_handler(commands=["meme_top", "мем_топ"])
+    logTG(message, {"meme_path": meme.path, "meme_points": meme_points, "user_data": user_data})
+
+@bot.message_handler(commands=["meme_top"])
 def message_handler(message: types.Message):
-    users = [json.load(open("users/" + username, "rb")) for username in listdir("users")]
-
-    def comparator(user):
-        return user["meme_points"]
-
-
-    users = sorted(users, key=comparator, reverse=True)
-    medals = "🥇🥈🥉"
-    text = "<b>=====[МЕМ ТОП]=====</b>\n\n"
-
-    for place in range(3):
-        if place > len(users) - 1: break
-        text += medals[place] + f"@{users[place]["username"]} - {users[place]["meme_points"]}\n"
 
     bot.send_message(
         chat_id=message.chat.id,
-        text=text
+        text=get_meme_top_as_text()
     )
 
-    log(message)
-
-
-@bot.message_handler(commands=["group_meme", "группа_мем"])
-def message_handler(message: types.Message):
-    if message.from_user.id == owner_id:
-        meme = get_random_meme()
-        bot.send_photo(
-            main_group_id,
-            photo=meme.get_image(),
-        )
+    logTG(message)
 
 
 #! Any message handler
@@ -263,31 +213,44 @@ def simple_answer(message: types.Message):
         bot.send_message(chat_id, "\n".join(other_text))
 
     # Answer to a swearing
-    elif text_type(message.text) == "swearing" and 'колеба' not in message.text.lower():
-        x = random.randint(1, 10)
-        name = message.from_user.first_name # Getting user's name
-        reply_text = f'Внимание, {name}, пожалуйста, следите за своим лексиконом'
-        image = ''
-        match x:
-            case 1: reply_text  = 'Уважаемый faggot, прошу следит за использованием нормативной лексики в чате класса.'
-            case 2: reply_text += ', иначе мне придётся передать всё Ирине Валерьевне.'
-            case 3: reply_text += ', а то уши вянут, хоть их у меня нет.'
-            case 4: reply_text += ', или мне придётся организовать свидание вашего рта с мылом.'
-            case 5: reply_text = f'Уважаемый {name}, пожалуйста, следить за свой лексикон, партия разочароваться ты, минус тысяча социальный кредит, минус кошка-жена.'
-            case 6: reply_text += ', спасибо за внимание.'
-            case 7: reply_text += ', не при детях же!'
-            case 8: reply_text += ', я не хочу разогревать свою аннигиляторную пушку.'
-            case 9: reply_text = 'Про мать было лишнее...'
-            case 10: image = open(choice(swearing_pics_paths), 'rb') # Choosing random swearing picture
-        if image == '':
+    elif text_type(message.text) == "swearing" and "колеба" not in message.text.lower():
+        
+        name = message.from_user.first_name # Getting the user's name
+        t = f'Внимание, {name}, пожалуйста, следите за своим лексиконом'
+        reply_text = choice([
+            'Уважаемый faggot, прошу следит за использованием нормативной лексики в чате класса.',
+            f'Уважаемый {name}, пожалуйста, следить за свой лексикон, партия разочароваться ты, минус тысяча социальный кредит, минус кошка-жена.',
+            'Про мать было лишнее...',
+            t + ', иначе мне придётся передать всё Ирине Валерьевне.',
+            t + ', а то уши вянут, хоть их у меня нет.',
+            t + ', или мне придётся организовать свидание вашего рта с мылом.',
+            t + ', спасибо за внимание.',
+            t + ', не при детях же!',
+            t + ', я не хочу разогревать свою аннигиляторную пушку.',
+            None
+        ])
+
+        if reply_text is not None:
             bot.reply_to(message, reply_text) # Replying with text
-        else: # Relpying with an image
-            bot.send_photo(
-                message.chat.id, 
-                photo=image,
-                caption=f'Внимание, {message.from_user.first_name}, пожалуйста, следите за своим лексиконом.',
-                reply_to_message_id=message.id
+        else:
+            requests.post(
+                apihelper.API_URL.format(bot_key, "sendPhoto"),
+                data={
+                    "chat_id": message.chat.id,
+                    "reply_to_message_id": message.id,
+                    "caption": f"Внимание, {message.from_user.first_name}, пожалуйста, следите за своим лексиконом.",
+                    "parse_mode": "html"
+                },
+                files = {"photo": open(choice(swearing_pics_paths), 'rb')}
             )
+
+            # bot.send_photo(
+            #     message.chat.id, 
+            #     photo=image,
+            #     caption=f'Внимание, {message.from_user.first_name}, пожалуйста, следите за своим лексиконом.',
+            #     reply_to_message_id=message.id
+            # )
+
     elif find_word(message, ['фуу', "зараза"]):
         bot.reply_to(message, 'Вы быканули, или мне показалось? 🤨')
 
@@ -303,15 +266,16 @@ def simple_answer(message: types.Message):
 
     # Answer to "sorry"
     elif text_type(message.text) == "sorry":
-        name = message.from_user.first_name # Getting user's name
-        reply_text = f'Не беспокойтесь, {name}, я не злопамятный.'
-        if name == owner_name:
-            reply_text += f' Зачем мне помнить кучку пепла, оставшуюся после моей аннигиляторной пушки? 😃'
-        bot.send_message(message.chat.id, reply_text)
-    elif text_type(message.text) == "cyber_vitya" and message.from_user.username != "Jrnrndnnf":
-        bot.reply_to(message, text=ask_ai(message.text), parse_mode="html")
+        bot.send_message(
+            chat_id = message.chat.id, 
+            reply_text = f'Не беспокойтесь, {message.from_user.first_name}, я не злопамятный.' + \
+                        (f' Зачем мне помнить кучку пепла, оставшуюся после моей аннигиляторной пушки? 😃' if choice([0, 1]) else "")
+        )
 
-    log(message) # Logging the message to the owner
+    elif text_type(message.text) == "cyber_vitya":
+        bot.reply_to(message=message, text=ask_ai(message.text), parse_mode="html")
+
+    logTG(message) # Logging the message to the owner
 
 # Sticker handler
 @bot.message_handler(content_types=["sticker"])

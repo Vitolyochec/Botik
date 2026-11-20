@@ -3,9 +3,14 @@ from gigachat import GigaChat
 from telebot import apihelper
 from random import shuffle, choice
 from tomllib import load as loadtoml
-from os import listdir
+from os import listdir, mkdir
 from winsound import Beep
-from re import match
+import json
+
+
+# Logging function
+def log(msg: str):
+    print(f'\n>> {dt.datetime.now()} -- {msg}')
 
 # Config
 try:    config = loadtoml(open(".config.toml", "rb")) # loading my config
@@ -17,6 +22,8 @@ owner_name = config["owner_name"] # Owner's account name
 main_group_id = config["main_group_id"] # Class's group id
 gigachat_api_key = config["gigachat_api_key"] # Gigachat API key
 connect_to_proxy = config["connect_to_proxy"] # Whether to connect to proxies on start
+apihelper.API_URL = config["API_URL"] + "/bot{0}/{1}" if config["API_URL"] != "" else apihelper.API_URL # API_URL throguh CloudFlare
+
 
 # Paths
 preambula_path = "data/preambula.txt"
@@ -24,13 +31,23 @@ birthdays_path = "data/birthdays.toml"
 events_path = "data/events.toml"
 word_bank_path = "data/word_bank.toml"
 proxy_path = "data/proxy.txt"
+consultations_path = "data/consultations.txt"
+meme_levels_path = "data/meme_levels.toml"
+
+must_directories = ["users", "memes"]
 
 # Function to ask AI
-gigachat = GigaChat(credentials=gigachat_api_key, verify_ssl_certs=False)
+gigachat = GigaChat(
+    base_url="https://api.giga.chat/v1",
+    credentials=gigachat_api_key,
+    scope="GIGACHAT_API_PERS",
+    verify_ssl_certs=False,
+    model = "GigaChat-2"
+)
 
 def ask_ai(user_prompt: str) -> str:
     answer = gigachat.chat(read_file(preambula_path) + user_prompt).choices[0].message.content.replace("GigaChat", "Кибер Витя").replace("**", "").replace("Сбер", "***")
-    print(f">> {dt.datetime.now()} -- Asking Gigachat...\n\nQ:\n\n{user_prompt}\n\nA:\n\n{answer}\n\n\n")
+    log(f"Asking Gigachat...\n\nQ:\n\n{user_prompt}\n\nA:\n\n{answer}\n\n\n")
     return answer 
 
 # Word bank
@@ -140,8 +157,6 @@ def shuffled(l: list) -> list:
     shuffle(l)
     return l
 
-
-
 # Function to connect to one of the proxies in proxy.txt
 best_proxies_num = 5
 def connect_proxy(bot) -> None:
@@ -167,8 +182,21 @@ def connect_proxy(bot) -> None:
     else:
         connect_proxy(bot)
 
+# Meme utils
 
-class Level:
+meme_ban_limit = 2
+meme_ban_period = 10 * 60 # 10 minutes
+medals = "🥇🥈🥉"
+
+user_data_template = {
+    "username": "",
+    "meme_points": 0, 
+    "meme_ban_time": 0,
+    "last_meme_point": -1,
+    "meme_ban_counter": 0
+}
+
+class MemeLevel:
     def __init__(self, emoji: str, points: list[int]):
         self.emoji = emoji
         self.points = points
@@ -176,12 +204,10 @@ class Level:
     def generate_points(self) -> int:
         return choice(self.points)
 
-meme_levels = {
-    "COMMON": Level("🗿", [0, 1]), 
-    "RARE" : Level("💎", [3, 4, 5]), 
-    "LEGENDARY" : Level("✨", [8, 9, 10]), 
-    "FMS": Level("📐", [11, 12])
-}
+# Loading meme levels
+meme_levels = {}
+for level, params in loadtoml(open(meme_levels_path, "rb")).items():
+    meme_levels[level] = MemeLevel(params["emoji"], params["points"])
 
 class Meme:
     def __init__(self, path: str):
@@ -202,6 +228,56 @@ def get_random_meme() -> Meme:
     meme_path = choice(memes)
 
     return Meme(meme_path)
+
+
+def get_meme_top_as_text() -> str:
+
+    users = sorted(
+        [json.load(open("users/" + username, "rb")) for username in listdir("users")],
+        key=lambda user: user["meme_points"],
+        reverse=True
+    )
+    
+    text = "<b>=====[МЕМ ТОП]=====</b>\n\n"
+
+    for place in range(3):
+        if place > len(users) - 1: break
+        text += medals[place] + f"@{users[place]["username"]} - {users[place]["meme_points"]}\n"
+
+    return text
+
+def get_user_data(username: str) -> dict:
+
+    user_data_path = f"users/{username}.json"
+
+    # Trying to open the file or creating one if one does not exist
+    try:    
+        json.load(open(user_data_path, "rb"))
+    except: 
+        with open(user_data_path, "w") as file:
+            file.write("{}")
+
+    # User data table with default values
+    user_data = user_data_template.copy()
+
+    for key, val in json.load(open(user_data_path, "rb")).items():
+        if key in user_data:
+            user_data[key] = val
+
+    user_data["username"] = username
+    
+    json.dump(user_data, open(user_data_path, "r+"), indent=4)
+    
+    return user_data
+
+# Creating absent folders
+for folder in must_directories: # Creating main folders
+    if folder not in listdir():
+        mkdir(folder)
+
+for level in meme_levels.keys(): # Creating meme category folders
+    if level not in listdir("memes"):
+        mkdir("memes/" + level)
 
 # Bot /start message
 start_mesage = (

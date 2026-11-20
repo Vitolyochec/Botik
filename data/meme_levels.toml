@@ -1,0 +1,15 @@
+[COMMON]
+emoji = "🗿"
+points = [0, 1]
+    
+[RARE]
+emoji = "💎"
+points = [3, 4, 5]
+
+[LEGENDARY]
+emoji = "✨"
+points = [8, 9, 10]
+
+["FMS"]
+emoji = "📐"
+points = [11, 12]
